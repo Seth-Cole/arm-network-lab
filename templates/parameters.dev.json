@@ -3,9 +3,8 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
      "location": { "value": "westus2"}, 
-     "environment": { "value": "dev"},
-     "namePrefix": { "value": "sc"},
-     "workloadName": { "value": "az"},
+     "environment": { "value": "lab"},
+     "namePrefix": { "value": "az"},
      "tags": {
         "value": {
             "owner": "Seth-Cole",

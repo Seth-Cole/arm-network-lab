@@ -1,65 +1,107 @@
 // ============================================
-// File: bicep_template.bicep
-// Purpose: Template for creating other Bicep templates
-// Notes: This template serves as a starting point for all Bicep templates in this project.
+// File: network.bicep
+// Purpose: Deploy core network components for the lab
+// Scope: vnet + subnets only
 // ============================================
 
 metadata author = 'Seth Cole'
-metadata date = '01-22-2026'
-metadata description = 'Bicep template to use for creating other Bicep templates for this project.'
+metadata date = '01-23-2026'
+metadata description = 'Network Component for ARM/BICEP Lab'
 
 //---------------------------------------------
-// Target scope 
-// Purpose: defines where template is deployed (can be 'resourceGroup', 'subscription', 'managementGroup', or 'tenant')
+// Target Scope 
+// Purpose: defines the scope of deployment for this Bicep template 
+// Scope: Network resource are being deployed at the resource group level
 // ---------------------------------------------
 targetScope = 'resourceGroup'
 
 // ---------------------------------------------
-// Parameters (inputs)
-// Purpose: reusable inputs for all Bicep templates, code that can be used for any Bicep template in this project
+// Parameters
+// Purpose: 
 // ---------------------------------------------
 param location string = resourceGroup().location
-param tags object = {}
+param namePrefix string = 'az'
+
+@allowed([
+  'lab'
+])
+
+param environment string = 'lab'
+
 
 // ---------------------------------------------
-// Variables / naming helpers
+// Variables
 // Purpose: Variables to help with naming conventions and other reusable values
 // ---------------------------------------------
 var regionToken = toLower(location)
-var baseName = '${namePrefix}-${environment}-${regionToken}'
+var baseName = '${namePrefix}-${environment}'
 
 // ---------------------------------------------
 // Resources
 // Purpose: The actual Azure resources this template owns and deploys
+// Notes: Microsoft suggest writing subnets as a child resource of the vnet, so for this case we will separate them out
 // ---------------------------------------------
-resource <symbol> '<resourceType>@<apiVersion>' = {
-  name: '<resourceName>'
-  location: location
-  tags: tags
+resource  VNET 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+  name: '${baseName}-vnet'
+  location: regionToken
   properties: {
-    // Resource-specific properties go here
+    addressSpace: {
+      addressPrefixes: [
+        '10.0.0.0/16'
+      ]
+    }
+  }
+}
+
+resource AzureFirewallSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
+  parent: VNET
+  name: 'AzureFirewallSubnet'
+  properties: {
+    addressPrefix: '10.0.1.0/26'
+  }
+}
+
+resource AdminSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
+  parent: VNET
+  name: '${baseName}-adsn'
+  properties: {
+    addressPrefix: '10.0.2.0/24'
+  }
+}
+
+resource WorkLoadSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
+  parent: VNET
+  name: '${baseName}-wlsn'
+  properties: {
+    addressPrefix: '10.0.3.0/24'
+  }
+}
+
+resource AzureFirewallManagementSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
+  parent: VNET
+  name: 'AzureFirewallManagementSubnet'
+  properties: {
+    addressPrefix: '10.0.4.0/26'
   }
 }
 
 // ---------------------------------------------
 // Modules (child components) 
 // Purpose: Compose deployment by calling other .bicep files (child components)
-//  Impliments parent + child design
+// Impliments parent + child design
+// Notes: None for this template
 // ---------------------------------------------
-module <symbol> '<moduleFileName>.bicep' = {
-  name: '<deploymentName>'
-  params: {
-    location: location
-    environment: environment
-    namePrefix: namePrefix
-    tags: tags
-  }
-}
+
 
 // ---------------------------------------------
 // Outputs (exported values)
 // Purpose: Returns useful values from this template after deployment
 // ---------------------------------------------
-output locationUsed string = location
+output locationUsed string = regionToken
 output environmentUsed string = environment
 output baseNameUsed string = baseName
+output vnetId string = VNET.id
+output AzureFirewallSubnetId string = AzureFirewallSubnet.id
+output AdminSubnetId string = AdminSubnet.id
+output WorkLoadSubnetId string = WorkLoadSubnet.id
+output AzureFirewallManagementSubnetId string = AzureFirewallManagementSubnet.id
