@@ -19,7 +19,13 @@ targetScope = 'resourceGroup'
 // Purpose: reusable inputs for all Bicep templates, code that can be used for any Bicep template in this project
 // ---------------------------------------------
 param location string = resourceGroup().location
-param tags object = {}
+param namePrefix string = 'az'
+
+@allowed([
+  'lab'
+])
+
+param environment string = 'lab'
 
 // ---------------------------------------------
 // Variables / naming helpers
@@ -46,13 +52,21 @@ resource <symbol> '<resourceType>@<apiVersion>' = {
 // Purpose: Compose deployment by calling other .bicep files (child components)
 //  Impliments parent + child design
 // ---------------------------------------------
-module <symbol> '<moduleFileName>.bicep' = {
-  name: '<deploymentName>'
+module networkModule 'network.bicep' = {
+  name: 'networkDeployment'
   params: {
     location: location
-    environment: environment
     namePrefix: namePrefix
-    tags: tags
+    environment: environment
+  }
+}
+
+module securityModule 'security.bicep' = {
+  name: 'securityDeployment'
+  params: {
+    location: location
+    namePrefix: namePrefix
+    environment: environment
   }
 }
 

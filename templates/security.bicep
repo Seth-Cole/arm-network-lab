@@ -1,60 +1,94 @@
 // ============================================
-// File: bicep_template.bicep
-// Purpose: Template for creating other Bicep templates
-// Notes: This template serves as a starting point for all Bicep templates in this project.
+// File: security.bicep
+// Purpose: Template for creating netowrk security resources in Azure.
+// Notes: This template will contain resources such as NSGs, firewall is a security resource but due to the complexity 
 // ============================================
 
 metadata author = 'Seth Cole'
-metadata date = '01-22-2026'
-metadata description = 'Bicep template to use for creating other Bicep templates for this project.'
+metadata date = '01-26-2026'
+metadata description = 'Template for creating netowrk security resources in Azure'
 
 //---------------------------------------------
 // Target scope 
-// Purpose: defines where template is deployed (can be 'resourceGroup', 'subscription', 'managementGroup', or 'tenant')
+// Purpose: Security resources are being deployed at the resource group level
 // ---------------------------------------------
 targetScope = 'resourceGroup'
 
 // ---------------------------------------------
-// Parameters (inputs)
-// Purpose: reusable inputs for all Bicep templates, code that can be used for any Bicep template in this project
+// Parameters
+// Purpose:
 // ---------------------------------------------
 param location string = resourceGroup().location
-param tags object = {}
+param namePrefix string = 'az'
+param AzureFirewallSubnetId string
+
+@allowed([
+  'lab'
+])
+
+param environment string = 'lab'
 
 // ---------------------------------------------
-// Variables / naming helpers
+// Variables
 // Purpose: Variables to help with naming conventions and other reusable values
 // ---------------------------------------------
 var regionToken = toLower(location)
-var baseName = '${namePrefix}-${environment}-${regionToken}'
+var baseName = '${namePrefix}-${environment}'
 
 // ---------------------------------------------
 // Resources
-// Purpose: The actual Azure resources this template owns and deploys
+// Purpose: Creating the Firewall Public IP, aswell as the Firewall and NSGs
 // ---------------------------------------------
-resource <symbol> '<resourceType>@<apiVersion>' = {
-  name: '<resourceName>'
-  location: location
-  tags: tags
+
+
+// Creating the Public IP for the Firewall first
+resource firewallPublicIp 'Microsoft.Network/publicIPAddresses@2021-05-01' = {
+  name: '${baseName}-fw-pip'
+  location: regionToken
   properties: {
-    // Resource-specific properties go here
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+  }
+    sku: {
+    name: 'Standard'
+    tier: 'Regional'
   }
 }
+
+// Creating the Firewall and NSGs
+resource firewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
+  name: '${baseName}-fw'
+  location: regionToken
+  properties: {
+    sku: {
+      name: 'AZFW_VNet'
+      tier: 'Basic'
+    }
+    ipConfigurations: [
+      { 
+        name: 'ipconfig'
+        properties: {
+          publicIPAddress: {
+            id: firewallPublicIp.id 
+          }
+        subnet: {
+          id: AzureFirewallSubnetId
+        }
+       }
+      }
+    ]
+  }
+}
+
+
+
 
 // ---------------------------------------------
 // Modules (child components) 
 // Purpose: Compose deployment by calling other .bicep files (child components)
 //  Impliments parent + child design
 // ---------------------------------------------
-module <symbol> '<moduleFileName>.bicep' = {
-  name: '<deploymentName>'
-  params: {
-    location: location
-    environment: environment
-    namePrefix: namePrefix
-    tags: tags
-  }
-}
+
 
 // ---------------------------------------------
 // Outputs (exported values)

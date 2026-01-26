@@ -9,8 +9,8 @@
         "value": {
             "owner": "Seth-Cole",
             "project": "Arm-Netowork-Lab",
-            "env": "dev"
-                }
+            "env": "lab"
             }
-           }
+        }
+    }
 }
