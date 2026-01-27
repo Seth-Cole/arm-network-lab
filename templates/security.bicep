@@ -1,7 +1,7 @@
 // ============================================
 // File: security.bicep
 // Purpose: Template for creating netowrk security resources in Azure.
-// Notes: This template will contain resources such as NSGs, firewall is a security resource but due to the complexity 
+// Notes: This template will contain resources such as NSGs and Azure Firewall
 // ============================================
 
 metadata author = 'Seth Cole'
@@ -66,7 +66,7 @@ resource firewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
     }
     ipConfigurations: [
       { 
-        name: 'ipconfig'
+        name: 'ipconfig' // attaching the public IP and subnet to the firewall
         properties: {
           publicIPAddress: {
             id: firewallPublicIp.id 
@@ -80,13 +80,20 @@ resource firewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
   }
 }
 
-
-
+// Network Security Group for Admin Subnet
+resource adminNSG 'Microsoft.Network/networkSecurityGroups@2025-05-01' = { 
+  location: regionToken
+  name: '${baseName}-admin-nsg'
+}
+// Network Security Group for Workload Subnet
+resource workloadNSG 'Microsoft.Network/networkSecurityGroups@2025-05-01' = { 
+  location: regionToken
+  name: '${baseName}-workload-nsg'
+}
 
 // ---------------------------------------------
 // Modules (child components) 
-// Purpose: Compose deployment by calling other .bicep files (child components)
-//  Impliments parent + child design
+// Purpose: Impliments parent + child design
 // ---------------------------------------------
 
 
@@ -97,3 +104,7 @@ resource firewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
 output locationUsed string = location
 output environmentUsed string = environment
 output baseNameUsed string = baseName
+output firewallId string = firewall.id
+output firewallPublicIpId string = firewallPublicIp.id
+output adminNSGId string = adminNSG.id
+output workloadNSGId string = workloadNSG.id
