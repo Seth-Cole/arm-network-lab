@@ -1,12 +1,12 @@
 // ============================================
 // File: bicep_template.bicep
-// Purpose: Template for creating other Bicep templates
-// Notes: This template serves as a starting point for all Bicep templates in this project.
+// Purpose: Template used as the parent template for all other Bicep templates in this project.
+// Notes: Main will be used to call both network.bicep and security.bicep for resource deployment.
 // ============================================
 
 metadata author = 'Seth Cole'
-metadata date = '01-22-2026'
-metadata description = 'Bicep template to use for creating other Bicep templates for this project.'
+metadata date = '01-27-2026'
+metadata description = 'Template used as the parent template for all other Bicep templates in this project.'
 
 //---------------------------------------------
 // Target scope 
@@ -32,48 +32,55 @@ param environment string = 'lab'
 // Purpose: Variables to help with naming conventions and other reusable values
 // ---------------------------------------------
 var regionToken = toLower(location)
-var baseName = '${namePrefix}-${environment}-${regionToken}'
+var baseName = '${namePrefix}-${environment}'
 
 // ---------------------------------------------
 // Resources
 // Purpose: The actual Azure resources this template owns and deploys
 // ---------------------------------------------
-resource <symbol> '<resourceType>@<apiVersion>' = {
-  name: '<resourceName>'
-  location: location
-  tags: tags
-  properties: {
-    // Resource-specific properties go here
-  }
-}
+
 
 // ---------------------------------------------
 // Modules (child components) 
 // Purpose: Compose deployment by calling other .bicep files (child components)
 //  Impliments parent + child design
 // ---------------------------------------------
-module networkModule 'network.bicep' = {
+module networkTemplate './network.bicep' = {
   name: 'networkDeployment'
   params: {
-    location: location
+    location: regionToken
     namePrefix: namePrefix
     environment: environment
   }
 }
+// Outputs from network module
+output vnetID string = networkTemplate.outputs.vnetId
+output AzureFirewallSubnetID string = networkTemplate.outputs.AzureFirewallSubnetId
+output AdminSubnetID string = networkTemplate.outputs.AdminSubnetId
+output WorkloadSubnetID string = networkTemplate.outputs.WorkLoadSubnetId
+output AzureFirewallManagementSubnetID string = networkTemplate.outputs.AzureFirewallManagementSubnetId
 
-module securityModule 'security.bicep' = {
+
+module securityTemplate './security.bicep' = {
   name: 'securityDeployment'
   params: {
-    location: location
+    location: regionToken
     namePrefix: namePrefix
     environment: environment
+    AzureFirewallSubnetId: networkTemplate.outputs.AzureFirewallManagementSubnetId
   }
 }
+// Outputs from security module
+output firewallID string = securityTemplate.outputs.firewallId
+output firewallPublicIpID string = securityTemplate.outputs.firewallPublicIpId
+output adminNSGID string = securityTemplate.outputs.adminNSGId
+output workloadNSGID string = securityTemplate.outputs.workloadNSGId
+
 
 // ---------------------------------------------
 // Outputs (exported values)
 // Purpose: Returns useful values from this template after deployment
 // ---------------------------------------------
-output locationUsed string = location
+output locationUsed string = regionToken
 output environmentUsed string = environment
 output baseNameUsed string = baseName

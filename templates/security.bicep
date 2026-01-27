@@ -101,7 +101,7 @@ resource workloadNSG 'Microsoft.Network/networkSecurityGroups@2025-05-01' = {
 // Outputs (exported values)
 // Purpose: Returns useful values from this template after deployment
 // ---------------------------------------------
-output locationUsed string = location
+output locationUsed string = regionToken
 output environmentUsed string = environment
 output baseNameUsed string = baseName
 output firewallId string = firewall.id
