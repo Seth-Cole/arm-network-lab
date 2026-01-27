@@ -5,7 +5,7 @@
 // ============================================
 
 metadata author = 'Seth Cole'
-metadata date = '01-26-2026'
+metadata date = '01-27-2026'
 metadata description = 'Template for creating netowrk security resources in Azure'
 
 //---------------------------------------------
