@@ -28,7 +28,6 @@ param namePrefix string = 'az'
 
 param environment string = 'lab'
 
-
 // ---------------------------------------------
 // Variables
 // Purpose: Variables to help with naming conventions and other reusable values
@@ -54,32 +53,32 @@ resource  VNET 'Microsoft.Network/virtualNetworks@2021-05-01' = {
 }
 
 resource AzureFirewallSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
-  parent: VNET
   name: 'AzureFirewallSubnet'
+  parent: VNET
   properties: {
     addressPrefix: '10.0.1.0/26'
   }
 }
 
 resource AdminSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
-  parent: VNET
   name: '${baseName}-adsn'
+  parent: VNET
   properties: {
     addressPrefix: '10.0.2.0/24'
   }
 }
 
 resource WorkLoadSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
-  parent: VNET
   name: '${baseName}-wlsn'
+  parent: VNET
   properties: {
     addressPrefix: '10.0.3.0/24'
   }
 }
 
 resource AzureFirewallManagementSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
-  parent: VNET
   name: 'AzureFirewallManagementSubnet'
+  parent: VNET
   properties: {
     addressPrefix: '10.0.4.0/26'
   }
@@ -103,5 +102,7 @@ output baseNameUsed string = baseName
 output vnetId string = VNET.id
 output AzureFirewallSubnetId string = AzureFirewallSubnet.id
 output AdminSubnetId string = AdminSubnet.id
+output AdminSubnetName string = AdminSubnet.name
 output WorkLoadSubnetId string = WorkLoadSubnet.id
+output WorkloadSubnetName string = WorkLoadSubnet.name
 output AzureFirewallManagementSubnetId string = AzureFirewallManagementSubnet.id

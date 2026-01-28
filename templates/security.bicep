@@ -27,6 +27,10 @@ param AzureFirewallSubnetId string
 ])
 
 param environment string = 'lab'
+param vnetId string
+param AdminSubnetName string
+param WorkloadSubnetName string
+
 
 // ---------------------------------------------
 // Variables
@@ -80,15 +84,58 @@ resource firewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
   }
 }
 
-// Network Security Group for Admin Subnet
+
+// ----------------------------------------------
+// Associating NSG to Admin Subnet
+// 1. Create NSG
+// 2. Create existing(vnet) parent reference
+// 3. Associate the NSG to the subnet
+// ----------------------------------------------
+
+// 1. NSG for Admin Subnet
 resource adminNSG 'Microsoft.Network/networkSecurityGroups@2025-05-01' = { 
   location: regionToken
   name: '${baseName}-admin-nsg'
 }
-// Network Security Group for Workload Subnet
+
+// 2. Existing VNET reference
+resource existingVnet 'Microsoft.Network/virtualNetworks@2021-05-01' existing = {
+  name: split(vnetId, '/')[8]
+}
+
+// 3. Associating the NSG to the Admin Subnet
+resource AdminNsgAssociation 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
+  name: AdminSubnetName
+  parent: existingVnet
+    properties: {
+    networkSecurityGroup: {
+      id: adminNSG.id
+    }
+  }
+}
+
+
+// ----------------------------------------------
+// Associating NSG to Admin Subnet
+// 1. Create NSG
+// 2. Associate the NSG to the subnet
+// ----------------------------------------------
+
+// 1. NSG for Workload Subnet
 resource workloadNSG 'Microsoft.Network/networkSecurityGroups@2025-05-01' = { 
   location: regionToken
   name: '${baseName}-workload-nsg'
+}
+
+// 2. Associate the NSG to the Workload Subnet
+resource WorkloadNsgAssociation 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
+  name: WorkloadSubnetName
+  parent: existingVnet
+    properties: {
+    networkSecurityGroup: {
+      id: workloadNSG.id
+    }
+  }
 }
 
 // ---------------------------------------------

@@ -42,8 +42,7 @@ var baseName = '${namePrefix}-${environment}'
 
 // ---------------------------------------------
 // Modules (child components) 
-// Purpose: Compose deployment by calling other .bicep files (child components)
-//  Impliments parent + child design
+// Purpose: Impliments parent + child design
 // ---------------------------------------------
 module networkTemplate './network.bicep' = {
   name: 'networkDeployment'
@@ -53,13 +52,6 @@ module networkTemplate './network.bicep' = {
     environment: environment
   }
 }
-// Outputs from network module
-output vnetID string = networkTemplate.outputs.vnetId
-output AzureFirewallSubnetID string = networkTemplate.outputs.AzureFirewallSubnetId
-output AdminSubnetID string = networkTemplate.outputs.AdminSubnetId
-output WorkloadSubnetID string = networkTemplate.outputs.WorkLoadSubnetId
-output AzureFirewallManagementSubnetID string = networkTemplate.outputs.AzureFirewallManagementSubnetId
-
 
 module securityTemplate './security.bicep' = {
   name: 'securityDeployment'
@@ -67,14 +59,26 @@ module securityTemplate './security.bicep' = {
     location: regionToken
     namePrefix: namePrefix
     environment: environment
-    AzureFirewallSubnetId: networkTemplate.outputs.AzureFirewallManagementSubnetId
+    AzureFirewallSubnetId: networkTemplate.outputs.AzureFirewallSubnetId
+    vnetId: networkTemplate.outputs.vnetId
+    AdminSubnetName: networkTemplate.outputs.AdminSubnetName
+    WorkloadSubnetName: networkTemplate.outputs.WorkloadSubnetName
   }
 }
+
+// Outputs from network module
+output vnetID string = networkTemplate.outputs.vnetId
+output AzureFirewallSubnetID string = networkTemplate.outputs.AzureFirewallSubnetId
+output AdminSubnetID string = networkTemplate.outputs.AdminSubnetId
+output WorkloadSubnetID string = networkTemplate.outputs.WorkLoadSubnetId
+output AzureFirewallManagementSubnetID string = networkTemplate.outputs.AzureFirewallManagementSubnetId
+
 // Outputs from security module
 output firewallID string = securityTemplate.outputs.firewallId
 output firewallPublicIpID string = securityTemplate.outputs.firewallPublicIpId
 output adminNSGID string = securityTemplate.outputs.adminNSGId
 output workloadNSGID string = securityTemplate.outputs.workloadNSGId
+
 
 
 // ---------------------------------------------
