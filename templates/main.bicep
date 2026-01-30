@@ -60,9 +60,19 @@ module securityTemplate './security.bicep' = {
     namePrefix: namePrefix
     environment: environment
     AzureFirewallSubnetId: networkTemplate.outputs.AzureFirewallSubnetId
-    vnetId: networkTemplate.outputs.vnetId
-    AdminSubnetName: networkTemplate.outputs.AdminSubnetName
-    WorkloadSubnetName: networkTemplate.outputs.WorkloadSubnetName
+  }
+}
+
+module NSGAssociationTemplate './NSGAssociation.bicep' = {
+  name: 'nsgAssociationDeployment'
+  params: {
+    location: regionToken
+    namePrefix: namePrefix
+    environment: environment
+    adminNSGId: securityTemplate.outputs.adminNSGId
+    workloadNSGId: securityTemplate.outputs.workloadNSGId
+    adminSubnetId: networkTemplate.outputs.AdminSubnetId
+    workloadSubnetId: networkTemplate.outputs.WorkLoadSubnetId
   }
 }
 
@@ -72,6 +82,9 @@ output AzureFirewallSubnetID string = networkTemplate.outputs.AzureFirewallSubne
 output AdminSubnetID string = networkTemplate.outputs.AdminSubnetId
 output WorkloadSubnetID string = networkTemplate.outputs.WorkLoadSubnetId
 output AzureFirewallManagementSubnetID string = networkTemplate.outputs.AzureFirewallManagementSubnetId
+output vnetName string = networkTemplate.outputs.vnetName
+output AdminSubnetName string = networkTemplate.outputs.AdminSubnetName
+output WorkloadSubnetName string = networkTemplate.outputs.WorkloadSubnetName
 
 // Outputs from security module
 output firewallID string = securityTemplate.outputs.firewallId

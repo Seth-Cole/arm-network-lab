@@ -4,13 +4,6 @@
     "parameters": {
      "location": { "value": "westus2"}, 
      "environment": { "value": "lab"},
-     "namePrefix": { "value": "az"},
-     "tags": {
-        "value": {
-            "owner": "Seth-Cole",
-            "project": "Arm-Netowork-Lab",
-            "env": "lab"
-            }
-        }
+     "namePrefix": { "value": "az"}
     }
 }

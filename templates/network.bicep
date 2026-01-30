@@ -100,6 +100,7 @@ output locationUsed string = regionToken
 output environmentUsed string = environment
 output baseNameUsed string = baseName
 output vnetId string = VNET.id
+output vnetName string = VNET.name
 output AzureFirewallSubnetId string = AzureFirewallSubnet.id
 output AdminSubnetId string = AdminSubnet.id
 output AdminSubnetName string = AdminSubnet.name
