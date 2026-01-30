@@ -26,12 +26,15 @@ param namePrefix string = 'az'
 ])
 
 param environment string = 'lab'
+// parameters for pulling existing vnet ids from main template
+param vnetName string
+
 //pulling admin subnet and nsg Ids frorm main template
 param adminNSGId string
-param adminSubnetId string
+param adminSubnetName string
 // pulling workload subnet and nsg Ids from main template
 param workloadNSGId string
-param workloadSubnetId string
+param workloadSubnetName string
 
 // ---------------------------------------------
 // Variables
@@ -42,8 +45,15 @@ var baseName = '${namePrefix}-${environment}'
 // Resources
 // Purpose: The actual Azure resources this template owns and deploys
 // ---------------------------------------------
+
+// creating resource symbol for existing vnet to associate nsgs to subnets
+resource existingVnet 'Microsoft.Network/virtualNetworks@2025-05-01' existing = {
+  name: vnetName
+}
+
 resource deployAdminNSG 'Microsoft.Network/virtualNetworks/subnets@2025-05-01' = {
-  name: '${adminSubnetId}/networkSecurityGroup'
+  parent: existingVnet
+  name: adminSubnetName
   properties: {
     networkSecurityGroup: {
       id: adminNSGId
@@ -52,7 +62,8 @@ resource deployAdminNSG 'Microsoft.Network/virtualNetworks/subnets@2025-05-01' =
 }
 
 resource deployWorkloadNSG 'Microsoft.Network/virtualNetworks/subnets@2025-05-01' = {
-  name: '${workloadSubnetId}/networkSecurityGroup'
+  parent: existingVnet
+  name: workloadSubnetName
   properties: {
     networkSecurityGroup: {
       id: workloadNSGId

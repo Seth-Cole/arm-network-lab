@@ -94,7 +94,7 @@ resource AzureFirewallManagementSubnet 'Microsoft.Network/virtualNetworks/subnet
 
 // ---------------------------------------------
 // Outputs (exported values)
-// Purpose: Returns useful values from this template after deployment
+// Purpose: Returns useful values from network template after deployment
 // ---------------------------------------------
 output locationUsed string = regionToken
 output environmentUsed string = environment

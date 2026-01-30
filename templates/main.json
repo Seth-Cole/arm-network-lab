@@ -1,0 +1,539 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.40.2.10011",
+      "templateHash": "3270465901873168009"
+    },
+    "author": "Seth Cole",
+    "date": "01-27-2026",
+    "description": "Template used as the parent template for all other Bicep templates in this project."
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "namePrefix": {
+      "type": "string",
+      "defaultValue": "az"
+    },
+    "environment": {
+      "type": "string",
+      "defaultValue": "lab",
+      "allowedValues": [
+        "lab"
+      ]
+    }
+  },
+  "variables": {
+    "regionToken": "[toLower(parameters('location'))]",
+    "baseName": "[format('{0}-{1}', parameters('namePrefix'), parameters('environment'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "networkDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[variables('regionToken')]"
+          },
+          "namePrefix": {
+            "value": "[parameters('namePrefix')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.40.2.10011",
+              "templateHash": "1464933657032670117"
+            },
+            "author": "Seth Cole",
+            "date": "01-23-2026",
+            "description": "Network Component for ARM/BICEP Lab"
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "namePrefix": {
+              "type": "string",
+              "defaultValue": "az"
+            },
+            "environment": {
+              "type": "string",
+              "defaultValue": "lab",
+              "allowedValues": [
+                "lab"
+              ]
+            }
+          },
+          "variables": {
+            "regionToken": "[toLower(parameters('location'))]",
+            "baseName": "[format('{0}-{1}', parameters('namePrefix'), parameters('environment'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2021-05-01",
+              "name": "[format('{0}-vnet', variables('baseName'))]",
+              "location": "[variables('regionToken')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "10.0.0.0/16"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "apiVersion": "2021-05-01",
+              "name": "[format('{0}/{1}', format('{0}-vnet', variables('baseName')), 'AzureFirewallSubnet')]",
+              "properties": {
+                "addressPrefix": "10.0.1.0/26"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', format('{0}-vnet', variables('baseName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "apiVersion": "2021-05-01",
+              "name": "[format('{0}/{1}', format('{0}-vnet', variables('baseName')), format('{0}-adsn', variables('baseName')))]",
+              "properties": {
+                "addressPrefix": "10.0.2.0/24"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', format('{0}-vnet', variables('baseName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "apiVersion": "2021-05-01",
+              "name": "[format('{0}/{1}', format('{0}-vnet', variables('baseName')), format('{0}-wlsn', variables('baseName')))]",
+              "properties": {
+                "addressPrefix": "10.0.3.0/24"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', format('{0}-vnet', variables('baseName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "apiVersion": "2021-05-01",
+              "name": "[format('{0}/{1}', format('{0}-vnet', variables('baseName')), 'AzureFirewallManagementSubnet')]",
+              "properties": {
+                "addressPrefix": "10.0.4.0/26"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', format('{0}-vnet', variables('baseName')))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "locationUsed": {
+              "type": "string",
+              "value": "[variables('regionToken')]"
+            },
+            "environmentUsed": {
+              "type": "string",
+              "value": "[parameters('environment')]"
+            },
+            "baseNameUsed": {
+              "type": "string",
+              "value": "[variables('baseName')]"
+            },
+            "vnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks', format('{0}-vnet', variables('baseName')))]"
+            },
+            "vnetName": {
+              "type": "string",
+              "value": "[format('{0}-vnet', variables('baseName'))]"
+            },
+            "AzureFirewallSubnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', format('{0}-vnet', variables('baseName')), 'AzureFirewallSubnet')]"
+            },
+            "AdminSubnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', format('{0}-vnet', variables('baseName')), format('{0}-adsn', variables('baseName')))]"
+            },
+            "AdminSubnetName": {
+              "type": "string",
+              "value": "[format('{0}-adsn', variables('baseName'))]"
+            },
+            "WorkLoadSubnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', format('{0}-vnet', variables('baseName')), format('{0}-wlsn', variables('baseName')))]"
+            },
+            "WorkloadSubnetName": {
+              "type": "string",
+              "value": "[format('{0}-wlsn', variables('baseName'))]"
+            },
+            "AzureFirewallManagementSubnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', format('{0}-vnet', variables('baseName')), 'AzureFirewallManagementSubnet')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "securityDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[variables('regionToken')]"
+          },
+          "namePrefix": {
+            "value": "[parameters('namePrefix')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "AzureFirewallSubnetId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.AzureFirewallSubnetId.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.40.2.10011",
+              "templateHash": "397444171850306552"
+            },
+            "author": "Seth Cole",
+            "date": "01-27-2026",
+            "description": "Template for creating netowrk security resources in Azure"
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "namePrefix": {
+              "type": "string",
+              "defaultValue": "az"
+            },
+            "AzureFirewallSubnetId": {
+              "type": "string"
+            },
+            "environment": {
+              "type": "string",
+              "defaultValue": "lab",
+              "allowedValues": [
+                "lab"
+              ]
+            }
+          },
+          "variables": {
+            "regionToken": "[toLower(parameters('location'))]",
+            "baseName": "[format('{0}-{1}', parameters('namePrefix'), parameters('environment'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2021-05-01",
+              "name": "[format('{0}-fw-pip', variables('baseName'))]",
+              "location": "[variables('regionToken')]",
+              "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static"
+              },
+              "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+              }
+            },
+            {
+              "type": "Microsoft.Network/azureFirewalls",
+              "apiVersion": "2021-05-01",
+              "name": "[format('{0}-fw', variables('baseName'))]",
+              "location": "[variables('regionToken')]",
+              "properties": {
+                "sku": {
+                  "name": "AZFW_VNet",
+                  "tier": "Basic"
+                },
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig",
+                    "properties": {
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-fw-pip', variables('baseName')))]"
+                      },
+                      "subnet": {
+                        "id": "[parameters('AzureFirewallSubnetId')]"
+                      }
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-fw-pip', variables('baseName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2025-05-01",
+              "name": "[format('{0}-admin-nsg', variables('baseName'))]",
+              "location": "[variables('regionToken')]"
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2025-05-01",
+              "name": "[format('{0}-workload-nsg', variables('baseName'))]",
+              "location": "[variables('regionToken')]"
+            }
+          ],
+          "outputs": {
+            "locationUsed": {
+              "type": "string",
+              "value": "[variables('regionToken')]"
+            },
+            "environmentUsed": {
+              "type": "string",
+              "value": "[parameters('environment')]"
+            },
+            "baseNameUsed": {
+              "type": "string",
+              "value": "[variables('baseName')]"
+            },
+            "firewallId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/azureFirewalls', format('{0}-fw', variables('baseName')))]"
+            },
+            "firewallPublicIpId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-fw-pip', variables('baseName')))]"
+            },
+            "adminNSGId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}-admin-nsg', variables('baseName')))]"
+            },
+            "workloadNSGId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}-workload-nsg', variables('baseName')))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'networkDeployment')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "nsgAssociationDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[variables('regionToken')]"
+          },
+          "namePrefix": {
+            "value": "[parameters('namePrefix')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "adminNSGId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'securityDeployment'), '2025-04-01').outputs.adminNSGId.value]"
+          },
+          "workloadNSGId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'securityDeployment'), '2025-04-01').outputs.workloadNSGId.value]"
+          },
+          "adminSubnetId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.AdminSubnetId.value]"
+          },
+          "workloadSubnetId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.WorkLoadSubnetId.value]"
+          },
+          "vnetName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.vnetName.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.40.2.10011",
+              "templateHash": "1769161103873243017"
+            },
+            "author": "Seth Cole",
+            "date": "01-29-2026",
+            "description": "Removing circulary dependency between network and security templates by deploying NSG association in its own template."
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "namePrefix": {
+              "type": "string",
+              "defaultValue": "az"
+            },
+            "environment": {
+              "type": "string",
+              "defaultValue": "lab",
+              "allowedValues": [
+                "lab"
+              ]
+            },
+            "vnetName": {
+              "type": "string"
+            },
+            "adminNSGId": {
+              "type": "string"
+            },
+            "adminSubnetId": {
+              "type": "string"
+            },
+            "workloadNSGId": {
+              "type": "string"
+            },
+            "workloadSubnetId": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "baseName": "[format('{0}-{1}', parameters('namePrefix'), parameters('environment'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "apiVersion": "2025-05-01",
+              "name": "[format('{0}/{1}', parameters('vnetName'), parameters('adminSubnetId'))]",
+              "properties": {
+                "networkSecurityGroup": {
+                  "id": "[parameters('adminNSGId')]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "apiVersion": "2025-05-01",
+              "name": "[format('{0}/{1}', parameters('vnetName'), parameters('workloadSubnetId'))]",
+              "properties": {
+                "networkSecurityGroup": {
+                  "id": "[parameters('workloadNSGId')]"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "locationUsed": {
+              "type": "string",
+              "value": "[parameters('location')]"
+            },
+            "environmentUsed": {
+              "type": "string",
+              "value": "[parameters('environment')]"
+            },
+            "baseNameUsed": {
+              "type": "string",
+              "value": "[variables('baseName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'networkDeployment')]",
+        "[resourceId('Microsoft.Resources/deployments', 'securityDeployment')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "vnetID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.vnetId.value]"
+    },
+    "AzureFirewallSubnetID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.AzureFirewallSubnetId.value]"
+    },
+    "AdminSubnetID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.AdminSubnetId.value]"
+    },
+    "WorkloadSubnetID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.WorkLoadSubnetId.value]"
+    },
+    "AzureFirewallManagementSubnetID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.AzureFirewallManagementSubnetId.value]"
+    },
+    "vnetName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.vnetName.value]"
+    },
+    "AdminSubnetName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.AdminSubnetName.value]"
+    },
+    "WorkloadSubnetName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'networkDeployment'), '2025-04-01').outputs.WorkloadSubnetName.value]"
+    },
+    "firewallID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'securityDeployment'), '2025-04-01').outputs.firewallId.value]"
+    },
+    "firewallPublicIpID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'securityDeployment'), '2025-04-01').outputs.firewallPublicIpId.value]"
+    },
+    "adminNSGID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'securityDeployment'), '2025-04-01').outputs.adminNSGId.value]"
+    },
+    "workloadNSGID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'securityDeployment'), '2025-04-01').outputs.workloadNSGId.value]"
+    },
+    "locationUsed": {
+      "type": "string",
+      "value": "[variables('regionToken')]"
+    },
+    "environmentUsed": {
+      "type": "string",
+      "value": "[parameters('environment')]"
+    },
+    "baseNameUsed": {
+      "type": "string",
+      "value": "[variables('baseName')]"
+    }
+  }
+}

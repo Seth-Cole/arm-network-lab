@@ -71,8 +71,9 @@ module NSGAssociationTemplate './NSGAssociation.bicep' = {
     environment: environment
     adminNSGId: securityTemplate.outputs.adminNSGId
     workloadNSGId: securityTemplate.outputs.workloadNSGId
-    adminSubnetId: networkTemplate.outputs.AdminSubnetId
-    workloadSubnetId: networkTemplate.outputs.WorkLoadSubnetId
+    vnetName: networkTemplate.outputs.vnetName
+    adminSubnetName: networkTemplate.outputs.AdminSubnetName
+    workloadSubnetName: networkTemplate.outputs.WorkloadSubnetName
   }
 }
 
