@@ -107,3 +107,5 @@ output AdminSubnetName string = AdminSubnet.name
 output WorkLoadSubnetId string = WorkLoadSubnet.id
 output WorkloadSubnetName string = WorkLoadSubnet.name
 output AzureFirewallManagementSubnetId string = AzureFirewallManagementSubnet.id
+output workloadSubnetAddressPrefix string = WorkLoadSubnet.properties.addressPrefix
+output adminSubnetAddressPrefix string = AdminSubnet.properties.addressPrefix

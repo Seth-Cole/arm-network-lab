@@ -74,6 +74,8 @@ module NSGAssociationTemplate './NSGAssociation.bicep' = {
     vnetName: networkTemplate.outputs.vnetName
     adminSubnetName: networkTemplate.outputs.AdminSubnetName
     workloadSubnetName: networkTemplate.outputs.WorkloadSubnetName
+    workloadSubnetAddressPrefix: networkTemplate.outputs.workloadSubnetAddressPrefix
+    adminSubnetAddressPrefix: networkTemplate.outputs.adminSubnetAddressPrefix
   }
 }
 
@@ -86,6 +88,8 @@ output AzureFirewallManagementSubnetID string = networkTemplate.outputs.AzureFir
 output vnetName string = networkTemplate.outputs.vnetName
 output AdminSubnetName string = networkTemplate.outputs.AdminSubnetName
 output WorkloadSubnetName string = networkTemplate.outputs.WorkloadSubnetName
+output workloadSubnetAddressPrefix string = networkTemplate.outputs.workloadSubnetAddressPrefix
+output adminSubnetAddressPrefix string = networkTemplate.outputs.adminSubnetAddressPrefix
 
 // Outputs from security module
 output firewallID string = securityTemplate.outputs.firewallId

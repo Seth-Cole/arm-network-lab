@@ -35,6 +35,9 @@ param adminSubnetName string
 // pulling workload subnet and nsg Ids from main template
 param workloadNSGId string
 param workloadSubnetName string
+//pulling workload and admin subnet address prefixes from main template
+param workloadSubnetAddressPrefix string
+param adminSubnetAddressPrefix string
 
 // ---------------------------------------------
 // Variables
@@ -55,6 +58,7 @@ resource deployAdminNSG 'Microsoft.Network/virtualNetworks/subnets@2025-05-01' =
   parent: existingVnet
   name: adminSubnetName
   properties: {
+    addressPrefix: adminSubnetAddressPrefix
     networkSecurityGroup: {
       id: adminNSGId
     }
@@ -65,6 +69,7 @@ resource deployWorkloadNSG 'Microsoft.Network/virtualNetworks/subnets@2025-05-01
   parent: existingVnet
   name: workloadSubnetName
   properties: {
+    addressPrefix: workloadSubnetAddressPrefix
     networkSecurityGroup: {
       id: workloadNSGId
     }
