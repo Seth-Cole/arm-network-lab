@@ -1,7 +1,0 @@
-Cleanup script
-
-
-Show current login and resource group
-confirm if use wants to delete resource group
-delete resource group
-check if resource group is deleted

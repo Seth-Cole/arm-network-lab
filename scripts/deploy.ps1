@@ -7,17 +7,17 @@
 # What Script will Do:
 #   - Checks for user login to Azure
 #   - Prompts user for RG name
-#   - Checks for existence of RG
 #   - Checks for existence of main.bicep and parameter files
+#   - Checks for existence of RG
 #   - Confirms deployment with user
 #   - Deploys main.bicep template to specified Resource Group
 #   - Checks deployment status and outputs results
 # Assumptions:
 #   - User is logged into Azure account (Connect-AzAccount)
-#   - Use hahs permissions to create resource group
+#   - User has permissions to create resource group
 #   - User has permissions to deploy resources to the resource group
 #   - Template and paramter files exist
-#   -Location for deployment is set in parameters
+#   - Location for deployment is set in parameters
 #
 # =============================================================
 
@@ -38,29 +38,7 @@ if (-not $userAccount)
     throw "No Azure account found, please login using Connect-AzAccount"
 }
 else {
-Write-Host "User logged into Azure as: $userAccount `nProceeding with Resource Group check"
-}
-
-# Prompts user for RG name
-$ResourceGroupName = (Read-Host -Prompt "Enter the Resource Group Name to be used for deployment")
-$userConfirmation = (Read-Host "Deploying to Resource Group $ResourceGroupName would you like to continue? (Type Yes with capital Y to proceed)")
-
-
-
-if ($userConfirmation -ne "Yes") {
-    throw "Resources and Resource Group will not be deployed, terminating process"
-}
-
-# Confirms deployment with user
-$rgCheck = Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue
-if (-not $rgCheck)
-{
-    New-AzResourceGroup -Name $ResourceGroupName -Location $location
-    Write-Host "Proceeding with deployment of resources to Resource Group: $ResourceGroupName"
-}
-else {
-    Write-Host "Resource Group $ResourceGroupName found, proceeding with deployment of resources"
-    
+    Write-Host "User logged into Azure as: $userAccount `nProceeding with preflight checks"
 }
 
 # Check for template files
@@ -75,10 +53,29 @@ else {
 # Check for parameter files
 if (Test-Path -Path $ParameterFile)
 {
- Write-Host "Parameter file found, proceeding with deployment" 
-} 
+    Write-Host "Parameter file found, proceeding with deployment confirmation"
+}
 else {
     throw "Parameter File not found at path: $ParameterFile"
+}
+
+# Prompts user for RG name
+$ResourceGroupName = (Read-Host -Prompt "Enter the Resource Group Name to be used for deployment")
+$userConfirmation = (Read-Host "Deploying to Resource Group $ResourceGroupName would you like to continue? (Type Yes with capital Y to proceed)")
+
+if ($userConfirmation -ne "Yes") {
+    throw "Resources and Resource Group will not be deployed, terminating process"
+}
+
+# Checks for existence of RG, creates if it does not exist
+$rgCheck = Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue
+if (-not $rgCheck)
+{
+    New-AzResourceGroup -Name $ResourceGroupName -Location $location
+    Write-Host "Proceeding with deployment of resources to Resource Group: $ResourceGroupName"
+}
+else {
+    Write-Host "Resource Group $ResourceGroupName found, proceeding with deployment of resources"
 }
 
 # Deploying main.bicep template to specified Resource Group
