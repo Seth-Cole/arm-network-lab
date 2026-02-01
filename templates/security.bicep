@@ -1,12 +1,12 @@
 // ============================================
 // File: security.bicep
-// Purpose: Template for creating netowrk security resources in Azure.
-// Notes: This template will contain resources such as NSGs and Azure Firewall
+// Purpose: Deploy Network Security Groups for the lab.
+// Notes: NSGs deploy first so their IDs can be passed into network.bicep during subnet creation.
 // ============================================
 
 metadata author = 'Seth Cole'
-metadata date = '01-27-2026'
-metadata description = 'Template for creating netowrk security resources in Azure'
+metadata date = '02-01-2026'
+metadata description = 'Template for creating NSG security resources in Azure'
 
 //---------------------------------------------
 // Target scope 
@@ -20,7 +20,6 @@ targetScope = 'resourceGroup'
 // ---------------------------------------------
 param location string = resourceGroup().location
 param namePrefix string = 'az'
-param AzureFirewallSubnetId string
 
 @allowed([
   'lab'
@@ -37,57 +36,16 @@ var baseName = '${namePrefix}-${environment}'
 
 // ---------------------------------------------
 // Resources
-// Purpose: Creating the Firewall Public IP, aswell as the Firewall and NSGs
+// Purpose: Creating the NSGs for Admin and Workload subnets
 // ---------------------------------------------
 
-
-// Creating the Public IP for the Firewall first
-resource firewallPublicIp 'Microsoft.Network/publicIPAddresses@2021-05-01' = {
-  name: '${baseName}-fw-pip'
-  location: regionToken
-  properties: {
-    publicIPAddressVersion: 'IPv4'
-    publicIPAllocationMethod: 'Static'
-  }
-    sku: {
-    name: 'Standard'
-    tier: 'Regional'
-  }
-}
-
-// Creating the Firewall and NSGs
-resource firewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
-  name: '${baseName}-fw'
-  location: regionToken
-  properties: {
-    sku: {
-      name: 'AZFW_VNet'
-      tier: 'Basic'
-    }
-    ipConfigurations: [
-      { 
-        name: 'ipconfig' // attaching the public IP and subnet to the firewall
-        properties: {
-          publicIPAddress: {
-            id: firewallPublicIp.id 
-          }
-        subnet: {
-          id: AzureFirewallSubnetId
-        }
-       }
-      }
-    ]
-  }
-}
-
-
-// 1. NSG for Admin Subnet
+// NSG for Admin Subnet
 resource adminNSG 'Microsoft.Network/networkSecurityGroups@2025-05-01' = { 
   location: regionToken
   name: '${baseName}-admin-nsg'
 }
 
-// 1. NSG for Workload Subnet
+// NSG for Workload Subnet
 resource workloadNSG 'Microsoft.Network/networkSecurityGroups@2025-05-01' = { 
   location: regionToken
   name: '${baseName}-workload-nsg'
@@ -106,7 +64,5 @@ resource workloadNSG 'Microsoft.Network/networkSecurityGroups@2025-05-01' = {
 output locationUsed string = regionToken
 output environmentUsed string = environment
 output baseNameUsed string = baseName
-output firewallId string = firewall.id
-output firewallPublicIpId string = firewallPublicIp.id
 output adminNSGId string = adminNSG.id
 output workloadNSGId string = workloadNSG.id

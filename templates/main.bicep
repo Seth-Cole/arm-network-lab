@@ -1,11 +1,11 @@
 // ============================================
-// File: bicep_template.bicep
-// Purpose: Template used as the parent template for all other Bicep templates in this project.
-// Notes: Main will be used to call both network.bicep and security.bicep for resource deployment.
+// File: main.bicep
+// Purpose: Orchestrator template — calls security, network, and firewall modules.
+// Notes: Deployment order: security (NSGs) → network (subnets with NSGs) → firewall.
 // ============================================
 
 metadata author = 'Seth Cole'
-metadata date = '01-27-2026'
+metadata date = '02-01-2026'
 metadata description = 'Template used as the parent template for all other Bicep templates in this project.'
 
 //---------------------------------------------
@@ -44,38 +44,38 @@ var baseName = '${namePrefix}-${environment}'
 // Modules (child components) 
 // Purpose: Impliments parent + child design
 // ---------------------------------------------
-module networkTemplate './network.bicep' = {
-  name: 'networkDeployment'
-  params: {
-    location: regionToken
-    namePrefix: namePrefix
-    environment: environment
-  }
-}
 
+// 1. Security deploys first — NSGs have no dependencies
 module securityTemplate './security.bicep' = {
   name: 'securityDeployment'
   params: {
     location: regionToken
     namePrefix: namePrefix
     environment: environment
-    AzureFirewallSubnetId: networkTemplate.outputs.AzureFirewallSubnetId
   }
 }
 
-module NSGAssociationTemplate './NSGAssociation.bicep' = {
-  name: 'nsgAssociationDeployment'
+// 2. Network deploys second — receives NSG IDs so subnets are created with NSGs already attached
+module networkTemplate './network.bicep' = {
+  name: 'networkDeployment'
   params: {
     location: regionToken
     namePrefix: namePrefix
     environment: environment
     adminNSGId: securityTemplate.outputs.adminNSGId
     workloadNSGId: securityTemplate.outputs.workloadNSGId
-    vnetName: networkTemplate.outputs.vnetName
-    adminSubnetName: networkTemplate.outputs.AdminSubnetName
-    workloadSubnetName: networkTemplate.outputs.WorkloadSubnetName
-    workloadSubnetAddressPrefix: networkTemplate.outputs.workloadSubnetAddressPrefix
-    adminSubnetAddressPrefix: networkTemplate.outputs.adminSubnetAddressPrefix
+  }
+}
+
+// 3. Firewall deploys last — receives subnet IDs from network
+module firewallTemplate './firewall.bicep' = {
+  name: 'firewallDeployment'
+  params: {
+    location: regionToken
+    namePrefix: namePrefix
+    environment: environment
+    AzureFirewallSubnetId: networkTemplate.outputs.AzureFirewallSubnetId
+    AzureFirewallManagementSubnetId: networkTemplate.outputs.AzureFirewallManagementSubnetId
   }
 }
 
@@ -92,10 +92,13 @@ output workloadSubnetAddressPrefix string = networkTemplate.outputs.workloadSubn
 output adminSubnetAddressPrefix string = networkTemplate.outputs.adminSubnetAddressPrefix
 
 // Outputs from security module
-output firewallID string = securityTemplate.outputs.firewallId
-output firewallPublicIpID string = securityTemplate.outputs.firewallPublicIpId
 output adminNSGID string = securityTemplate.outputs.adminNSGId
 output workloadNSGID string = securityTemplate.outputs.workloadNSGId
+
+// Outputs from firewall module
+output firewallID string = firewallTemplate.outputs.firewallId
+output firewallPublicIpID string = firewallTemplate.outputs.firewallPublicIpId
+output firewallManagementPublicIpID string = firewallTemplate.outputs.firewallManagementPublicIpId
 
 
 

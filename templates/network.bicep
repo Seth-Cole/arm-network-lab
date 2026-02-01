@@ -5,7 +5,7 @@
 // ============================================
 
 metadata author = 'Seth Cole'
-metadata date = '01-23-2026'
+metadata date = '02-01-2026'
 metadata description = 'Network Component for ARM/BICEP Lab'
 
 //---------------------------------------------
@@ -21,6 +21,8 @@ targetScope = 'resourceGroup'
 // ---------------------------------------------
 param location string = resourceGroup().location
 param namePrefix string = 'az'
+param adminNSGId string
+param workloadNSGId string
 
 @allowed([
   'lab'
@@ -38,9 +40,12 @@ var baseName = '${namePrefix}-${environment}'
 // ---------------------------------------------
 // Resources
 // Purpose: The actual Azure resources this template owns and deploys
-// Notes: Microsoft suggest writing subnets as a child resource of the vnet, so for this case we will separate them out
+// Notes: All subnets are declared inline inside the VNet properties.subnets array.
+//        This ensures ARM processes them as a single write operation, avoiding
+//        the AnotherOperationInProgress collision that occurs when subnets are
+//        declared as separate child resources and ARM fires them in parallel.
 // ---------------------------------------------
-resource  VNET 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+resource VNET 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: '${baseName}-vnet'
   location: regionToken
   properties: {
@@ -49,38 +54,38 @@ resource  VNET 'Microsoft.Network/virtualNetworks@2021-05-01' = {
         '10.0.0.0/16'
       ]
     }
-  }
-}
-
-resource AzureFirewallSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
-  name: 'AzureFirewallSubnet'
-  parent: VNET
-  properties: {
-    addressPrefix: '10.0.1.0/26'
-  }
-}
-
-resource AdminSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
-  name: '${baseName}-adsn'
-  parent: VNET
-  properties: {
-    addressPrefix: '10.0.2.0/24'
-  }
-}
-
-resource WorkLoadSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
-  name: '${baseName}-wlsn'
-  parent: VNET
-  properties: {
-    addressPrefix: '10.0.3.0/24'
-  }
-}
-
-resource AzureFirewallManagementSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
-  name: 'AzureFirewallManagementSubnet'
-  parent: VNET
-  properties: {
-    addressPrefix: '10.0.4.0/26'
+    subnets: [
+      {
+        name: 'AzureFirewallSubnet'
+        properties: {
+          addressPrefix: '10.0.1.0/26'
+        }
+      }
+      {
+        name: '${baseName}-adsn'
+        properties: {
+          addressPrefix: '10.0.2.0/24'
+          networkSecurityGroup: {
+            id: adminNSGId
+          }
+        }
+      }
+      {
+        name: '${baseName}-wlsn'
+        properties: {
+          addressPrefix: '10.0.3.0/24'
+          networkSecurityGroup: {
+            id: workloadNSGId
+          }
+        }
+      }
+      {
+        name: 'AzureFirewallManagementSubnet'
+        properties: {
+          addressPrefix: '10.0.4.0/26'
+        }
+      }
+    ]
   }
 }
 
@@ -101,11 +106,11 @@ output environmentUsed string = environment
 output baseNameUsed string = baseName
 output vnetId string = VNET.id
 output vnetName string = VNET.name
-output AzureFirewallSubnetId string = AzureFirewallSubnet.id
-output AdminSubnetId string = AdminSubnet.id
-output AdminSubnetName string = AdminSubnet.name
-output WorkLoadSubnetId string = WorkLoadSubnet.id
-output WorkloadSubnetName string = WorkLoadSubnet.name
-output AzureFirewallManagementSubnetId string = AzureFirewallManagementSubnet.id
-output workloadSubnetAddressPrefix string = WorkLoadSubnet.properties.addressPrefix
-output adminSubnetAddressPrefix string = AdminSubnet.properties.addressPrefix
+output AzureFirewallSubnetId string = '${VNET.id}/subnets/AzureFirewallSubnet'
+output AdminSubnetId string = '${VNET.id}/subnets/${baseName}-adsn'
+output AdminSubnetName string = '${baseName}-adsn'
+output WorkLoadSubnetId string = '${VNET.id}/subnets/${baseName}-wlsn'
+output WorkloadSubnetName string = '${baseName}-wlsn'
+output AzureFirewallManagementSubnetId string = '${VNET.id}/subnets/AzureFirewallManagementSubnet'
+output workloadSubnetAddressPrefix string = '10.0.3.0/24'
+output adminSubnetAddressPrefix string = '10.0.2.0/24'
