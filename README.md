@@ -3,6 +3,7 @@
 Bicep templates and PowerShell scripts to repeatably deploy the Azure network environment from [azure-internal-app-network-lab](https://github.com/Seth-Cole/azure-internal-app-network-lab) as infrastructure-as-code.
 
 ## Architecture Overview
+![Architecture diagram](docs/architecture.png)
 
 The same network topology from the original click-through lab, expressed as a modular Bicep deployment orchestrated through a parent/child template structure.
 
