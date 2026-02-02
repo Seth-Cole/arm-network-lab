@@ -20,11 +20,11 @@ The same network topology from the original click-through lab, expressed as a mo
 
 | File | Role |
 |------|------|
-| `main.bicep` | Orchestrates all child modules and passes outputs between them |
-| `security.bicep` | Deploys both NSGs (no dependencies, runs first) |
-| `network.bicep` | Deploys the VNet with all four subnets inline, NSGs already attached |
-| `firewall.bicep` | Deploys the firewall and both public IPs (runs last, needs firewall subnet IDs from network) |
-| `parameters.dev.json` | Environment-specific values (region, prefix, environment tag) |
+| ![main template](/templates/main.bicep) | Orchestrates all child modules and passes outputs between them |
+| ![security template](/templates/security.bicep) | Deploys both NSGs (no dependencies, runs first) |
+| ![network template](/templates/network.bicep) | Deploys the VNet with all four subnets inline, NSGs already attached |
+| ![firewall template](/templates/firewall.bicep) | Deploys the firewall and both public IPs (runs last, needs firewall subnet IDs from network) |
+| ![parameters json file](/templates/parameters.dev.json) | Environment-specific values (region, prefix, environment tag) |
 
 ## Design Decisions
 
@@ -39,9 +39,9 @@ All three scripts resolve template paths relative to their own location, so they
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/what-if.ps1` | Dry-run analysis — shows what would be created without touching Azure |
-| `scripts/deploy.ps1` | Deploys all resources to a specified resource group (creates the RG if it does not exist) |
-| `scripts/cleanup.ps1` | Deletes the resource group and confirms deletion before exiting |
+| ![what if script](scripts/what-if.ps1) | Dry-run analysis — shows what would be created without touching Azure |
+| ![deploy script](scripts/deploy.ps1) | Deploys all resources to a specified resource group (creates the RG if it does not exist) |
+| [clean up script](scripts/cleanup.ps1) | Deletes the resource group and confirms deletion before exiting |
 
 ## Skills Demonstrated
 
